@@ -28,7 +28,6 @@
   h2{margin:0 0 10px;font-size:18px;color:#111827}
   .tiny{font-size:13px;color:var(--muted);line-height:1.4}
   
-  /* Physiological sigh breathing */
   .breathArea{text-align:center;padding:20px 0}
   .circle{width:220px;height:220px;border-radius:50%;margin:16px auto;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 40% 30%, rgba(5,150,105,0.15), rgba(5,150,105,0.05));transition:transform 1.2s cubic-bezier(0.4,0,0.2,1);box-shadow:0 8px 24px rgba(5,150,105,0.12);position:relative}
   .circle::before{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(5,150,105,0.15);opacity:0;transition:opacity 0.3s}
@@ -36,24 +35,20 @@
   @keyframes pulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.05);opacity:0.6}}
   .circle-label{font-size:24px;color:var(--accent);font-weight:600}
   
-  /* Cognitive reappraisal */
   .thought-card{background:#fefce8;border-left:4px solid var(--warm);padding:16px;border-radius:8px;margin:12px 0}
   .reframe-card{background:#eff6ff;border-left:4px solid var(--cool);padding:16px;border-radius:8px;margin:12px 0;cursor:pointer;transition:all 0.2s}
   .reframe-card:hover{background:#dbeafe;transform:translateX(4px)}
   textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font-size:14px;font-family:inherit;resize:vertical;min-height:80px}
   
-  /* Progressive muscle relaxation */
   .muscle-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
   .muscle-btn{padding:16px 12px;border:2px solid #e5e7eb;background:white;border-radius:10px;cursor:pointer;transition:all 0.3s;font-size:13px;font-weight:500}
   .muscle-btn:hover{border-color:var(--accent);background:#f0fdf4}
   .muscle-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
   
-  /* Attention redirect - gratitude */
   .gratitude-list{list-style:none;padding:0;margin:16px 0}
   .gratitude-item{padding:14px;background:#f9fafb;border-radius:8px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
   .gratitude-item button{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:4px 8px;font-size:18px}
   
-  /* Anger thermometer */
   .thermometer{height:240px;width:48px;background:linear-gradient(to bottom,#ef4444 0%,#f59e0b 50%,#10b981 100%);border-radius:24px;position:relative;margin:20px auto}
   .therm-marker{position:absolute;left:50%;transform:translateX(-50%);width:64px;height:4px;background:#1f2937;transition:bottom 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
   .therm-labels{display:flex;flex-direction:column-reverse;justify-content:space-between;height:240px;position:absolute;left:60px;top:0;font-size:12px;color:var(--muted)}
@@ -82,7 +77,6 @@
   ul.tips{line-height:1.6;color:var(--muted);font-size:14px}
   ul.tips li{margin:8px 0}
   
-  /* Dashboard */
   .dashboard{display:none}
   .dashboard.active{display:block}
   .main-view{display:block}
@@ -362,7 +356,6 @@
 <script>
 const $ = id => document.getElementById(id);
 
-// State management
 let state = {
   currentAngerLevel: 5,
   sighRunning: false,
@@ -371,7 +364,6 @@ let state = {
   techniquesUsed: JSON.parse(localStorage.getItem('techniquesUsed') || '{}')
 };
 
-/* ===== PHYSIOLOGICAL SIGH ===== */
 let sighTimer = null;
 
 function startSigh() {
@@ -389,7 +381,6 @@ function startSigh() {
   
   function runCycle() {
     if (!state.sighRunning || currentCycle >= cycles) {
-      // Breathing complete
       const endAnger = state.currentAngerLevel;
       const reduction = Math.max(0, startAnger - endAnger);
       
@@ -406,7 +397,6 @@ function startSigh() {
       stopSigh();
       markTechniqueUsed('breath');
       
-      // Update count
       const count = parseInt(localStorage.getItem('sighCount') || '0') + 1;
       localStorage.setItem('sighCount', count);
       $('sighCount').textContent = count;
@@ -414,7 +404,6 @@ function startSigh() {
       return;
     }
     
-    // First inhale
     label.textContent = 'Inhale deeply (nose)';
     circle.style.transform = 'scale(1.15)';
     circle.classList.add('active');
@@ -463,7 +452,6 @@ function stopSigh() {
 $('startSigh').addEventListener('click', startSigh);
 $('stopSigh').addEventListener('click', stopSigh);
 
-/* ===== COGNITIVE REAPPRAISAL WITH AI PROMPTS ===== */
 async function generateAIReframePrompts(trigger) {
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -499,7 +487,6 @@ Respond with ONLY a JSON array of 4 questions, nothing else. Example format:
     if (data.content && data.content.length > 0) {
       let text = '';
       
-      // Combine all text blocks
       for (const block of data.content) {
         if (block.type === 'text') {
           text += block.text;
@@ -508,7 +495,6 @@ Respond with ONLY a JSON array of 4 questions, nothing else. Example format:
       
       console.log('Extracted text:', text);
       
-      // Clean up the text - remove markdown fences and extra whitespace
       text = text.trim()
         .replace(/```json\s*/g, '')
         .replace(/```\s*/g, '')
@@ -516,7 +502,6 @@ Respond with ONLY a JSON array of 4 questions, nothing else. Example format:
       
       console.log('Cleaned text:', text);
       
-      // Try to parse the JSON
       const prompts = JSON.parse(text);
       
       if (Array.isArray(prompts) && prompts.length > 0) {
@@ -533,17 +518,14 @@ Respond with ONLY a JSON array of 4 questions, nothing else. Example format:
     console.error('Full error details:', error);
     console.error('Error message:', error.message);
     
-    // Fallback to intelligent template-based system
     return generateIntelligentFallback(trigger);
   }
 }
 
-// Intelligent fallback system that analyzes context deeply
 function generateIntelligentFallback(trigger) {
   const lower = trigger.toLowerCase();
   const words = lower.split(/\s+/);
   
-  // Advanced contextual analysis
   const context = {
     interpersonal: /\b(said|told|they|he|she|person|people|friend|family|coworker|colleague|partner|spouse|boss|manager|teacher)\b/.test(lower),
     work: /\b(work|job|boss|project|meeting|deadline|presentation|report|office|client|task|performance|review)\b/.test(lower),
@@ -555,14 +537,12 @@ function generateIntelligentFallback(trigger) {
     control: /\b(control|force|make me|told me|demand|order|insist|pressure)\b/.test(lower)
   };
   
-  // Extract key entities and actions
   const hasNegation = /\b(didn't|don't|doesn't|won't|wouldn't|never|no|not)\b/.test(lower);
   const hasPast = /\b(was|were|did|had|got|made|said|told|went)\b/.test(lower);
   const hasEmotionWords = /\b(angry|mad|furious|upset|frustrated|annoyed|irritated|hurt|feel|felt)\b/.test(lower);
   
   let prompts = [];
   
-  // Generate prompts based on deep context analysis
   if (context.interpersonal && context.criticism) {
     prompts = [
       `What if this person's critical comment reveals more about their own stress, insecurity, or communication style than about your actual worth or competence?`,
@@ -592,7 +572,6 @@ function generateIntelligentFallback(trigger) {
       `How would you advise someone you deeply respect if they were facing this exact frustration?`
     ];
   } else if (hasNegation && hasPast) {
-    // Something didn't happen that should have
     prompts = [
       `What unexpressed expectations or assumptions might you have been holding that didn't get communicated clearly?`,
       `If you viewed this as a mismatch of priorities or awareness rather than intentional disregard, how would that change things?`,
@@ -600,7 +579,6 @@ function generateIntelligentFallback(trigger) {
       `How might this disappointment actually be protecting you from something or pointing you toward what really matters?`
     ];
   } else {
-    // Deep general reframing for any situation
     prompts = [
       `If you step back from the immediate emotional reaction, what is the core need or value of yours that feels threatened here?`,
       `What are three radically different explanations for why this happened that don't assume malicious intent toward you?`,
@@ -626,7 +604,6 @@ $('generateReframe').addEventListener('click', async () => {
   const promptsDiv = $('reframePrompts');
   const btn = $('generateReframe');
   
-  // Show loading state
   btn.disabled = true;
   btn.textContent = 'Generating personalized prompts...';
   promptsDiv.innerHTML = '<div class="thought-card"><strong>Your anger trigger:</strong><br>' + trigger + '</div><p class="tiny" style="color:var(--accent);margin:12px 0">Analyzing your situation and generating personalized reframing questions...</p>';
@@ -681,7 +658,6 @@ $('saveReframe').addEventListener('click', () => {
   $('reframePrompts').innerHTML = '';
 });
 
-/* ===== PROGRESSIVE MUSCLE RELAXATION ===== */
 let pmrTimer = null;
 const muscles = ['jaw', 'neck', 'shoulders', 'arms', 'hands', 'chest', 'stomach', 'legs'];
 let currentMuscleIndex = 0;
@@ -762,7 +738,6 @@ $('stopPMR').addEventListener('click', () => {
   clearTimeout(pmrTimer);
 });
 
-/* ===== GRATITUDE PRACTICE ===== */
 $('addGratitude').addEventListener('click', () => {
   const text = $('gratitudeInput').value.trim();
   if (!text) return;
@@ -788,7 +763,6 @@ $('addGratitude').addEventListener('click', () => {
   
   markTechniqueUsed('gratitude');
   
-  // Keep only last 10 in view
   while ($('gratitudeList').children.length > 10) {
     $('gratitudeList').removeChild($('gratitudeList').lastChild);
   }
@@ -798,12 +772,10 @@ $('gratitudeInput').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') $('addGratitude').click();
 });
 
-/* ===== ANGER THERMOMETER ===== */
 $('angerLevel').addEventListener('input', (e) => {
   const level = parseInt(e.target.value);
   state.currentAngerLevel = level;
   
-  // Calculate position: 0 = bottom (0px), 10 = top (240px)
   const pixelPosition = (level / 10) * 240;
   $('thermMarker').style.bottom = pixelPosition + 'px';
   
@@ -845,7 +817,6 @@ function updateAngerHistory() {
   $('angerHistory').innerHTML = html || '<div class="tiny">No readings yet</div>';
 }
 
-/* ===== ENTRY MANAGEMENT ===== */
 function addEntry(entry) {
   const fullEntry = {
     ...entry,
@@ -859,7 +830,12 @@ function addEntry(entry) {
   updateAngerHistory();
 }
 
-/* ===== PROGRESS TRACKING ===== */
+function deleteEntry(id) {
+  state.entries = state.entries.filter(e => e.id != id);
+  localStorage.setItem('angerEntries', JSON.stringify(state.entries));
+  renderDashboard();
+}
+
 function markTechniqueUsed(technique) {
   const today = new Date().toDateString();
   
@@ -896,7 +872,6 @@ function updateProgress() {
   });
 }
 
-/* ===== DASHBOARD ===== */
 $('dashboardBtn').addEventListener('click', () => {
   $('mainView').classList.add('hidden');
   $('dashboardView').classList.add('active');
@@ -908,7 +883,6 @@ $('backBtn').addEventListener('click', () => {
   $('dashboardView').classList.remove('active');
 });
 
-// Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -926,7 +900,6 @@ function renderDashboard() {
   const today = new Date().toDateString();
   const todayEntries = state.entries.filter(e => new Date(e.timestamp).toDateString() === today);
   
-  // Overview stats
   const avgAnger = todayEntries.length > 0 
     ? (todayEntries.reduce((sum, e) => sum + (e.startAnger || 0), 0) / todayEntries.length).toFixed(1)
     : 0;
@@ -935,7 +908,6 @@ function renderDashboard() {
   $('entriesCountToday').textContent = todayEntries.length;
   $('sighsToday').textContent = localStorage.getItem('sighCount') || 0;
   
-  // Recent entries
   renderRecentEntries();
   renderHistoryLog();
 }
@@ -947,7 +919,10 @@ function renderRecentEntries() {
     const date = new Date(e.timestamp).toLocaleDateString();
     
     let content = `<div class="history-entry">
-      <h4>${e.technique}</h4>
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <h4>${e.technique}</h4>
+        <button onclick="deleteEntry('${e.id}')" style="background:transparent;color:var(--muted);padding:4px 8px;font-size:18px;border:1px solid #e5e7eb;border-radius:6px;min-width:auto">×</button>
+      </div>
       <div class="meta">${date} at ${time}</div>`;
     
     if (e.startAnger !== undefined) {
@@ -993,7 +968,10 @@ function renderHistoryLog(filterDate = null) {
     const date = new Date(e.timestamp).toLocaleDateString();
     
     let content = `<div class="history-entry">
-      <h4>${e.technique}</h4>
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <h4>${e.technique}</h4>
+        <button onclick="deleteEntry('${e.id}')" style="background:transparent;color:var(--muted);padding:4px 8px;font-size:18px;border:1px solid #e5e7eb;border-radius:6px;min-width:auto">×</button>
+      </div>
       <div class="meta">${date} at ${time}</div>`;
     
     if (e.startAnger !== undefined) {
@@ -1037,7 +1015,6 @@ $('clearFilter').addEventListener('click', () => {
 });
 
 function renderStats() {
-  // Calculate effectiveness of each technique
   const techniques = {
     breathing: [],
     reappraisal: [],
@@ -1068,7 +1045,6 @@ function renderStats() {
   $('gratitudeEffect').style.width = (avgReduction(techniques.gratitude) * 10) + '%';
   $('gratitudeEffect').textContent = avgReduction(techniques.gratitude).toFixed(1);
   
-  // 7-day trend
   const last7Days = [];
   for (let i = 6; i >= 0; i--) {
     const date = new Date();
@@ -1097,17 +1073,13 @@ function renderStats() {
   $('weeklyTrend').innerHTML = trendHtml;
 }
 
-/* ===== INITIALIZATION ===== */
 (function init() {
-  // Load initial data
   $('sighCount').textContent = localStorage.getItem('sighCount') || 0;
   updateProgress();
   updateAngerHistory();
   
-  // Set initial thermometer
   $('angerLevel').dispatchEvent(new Event('input'));
   
-  // Auto-suggest breathing if anger is high
   $('angerLevel').addEventListener('change', (e) => {
     const level = parseInt(e.target.value);
     if (level >= 7 && !state.sighRunning) {
@@ -1119,7 +1091,6 @@ function renderStats() {
     }
   });
   
-  // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     if (e.target.matches('input, textarea')) return;
     
